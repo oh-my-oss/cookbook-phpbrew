@@ -26,7 +26,7 @@ end
     package pkg
 end
 
-%w(libxml2-devel).each do |pkg|
+%w(libxml2-devel openssl-devel).each do |pkg|
     package pkg
 end
 
@@ -51,6 +51,6 @@ end
 
 node['php_versions'].each do |version|
     execute 'php' + version + ' install' do
-        command 'sudo /usr/local/bin/phpbrew install ' + version + ' ' + node['phpbrew_install_arg']
+        command 'sudo /usr/local/bin/phpbrew install ' + version + ' ' + node['phpbrew_install_arg'] + ' -- --with-libdir=lib64'
     end
 end
