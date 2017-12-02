@@ -52,5 +52,6 @@ end
 node['php_versions'].each do |version|
     execute 'php' + version + ' install' do
         command 'sudo /usr/local/bin/phpbrew install ' + version + ' ' + node['phpbrew_install_arg'] + ' -- --with-libdir=lib64'
+        not_if { File.exists?('/root/.phpbrew/php/php-' + version + '/bin/php') }
     end
 end
