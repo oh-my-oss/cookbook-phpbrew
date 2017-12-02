@@ -26,7 +26,7 @@ end
     package pkg
 end
 
-%w(libxml2-devel openssl-devel bzip2-devel).each do |pkg|
+%w(libxml2-devel openssl-devel bzip2-devel libcurl-devel).each do |pkg|
     package pkg
 end
 
