@@ -27,13 +27,21 @@ execute 'setup bashrc3' do
 end
 
 execute 'phpbrew init' do
-    command "/usr/local/bin/phpbrew init && echo '[[ -e ~/.phpbrew/bashrc ]] && source ~/.phpbrew/bashrc' >> ~/.bashrc && . ~/.bashrc && /usr/local/bin/phpbrew known"
-    not_if { Dir.exists?('~/.phpbrew') }
+    command "phpbrew init && phpbrew known"
+    environment(
+        "PATH" => "/usr/local/bin:#{ENV['PATH']}",
+        "PHPBREW_ROOT" => "/usr/local/lib64/phpbrew"
+    )
+    not_if { File.exists?('/usr/local/lib64/phpbrew/bashrc') }
 end
 
 node['php_versions'].each do |version|
     execute 'php' + version + ' install' do
-        command 'sudo /usr/local/bin/phpbrew install ' + version + ' ' + node['phpbrew_install_arg'] + ' -- --with-libdir=lib64'
-        not_if { File.exists?('/root/.phpbrew/php/php-' + version + '/bin/php') }
+        command 'phpbrew install ' + version + ' ' + node['phpbrew_install_arg'] + ' -- --with-libdir=lib64'
+        environment(
+            "PATH" => "/usr/local/bin:#{ENV['PATH']}",
+            "PHPBREW_ROOT" => "/usr/local/lib64/phpbrew"
+        )
+        not_if { File.exists?('/usr/local/lib64/phpbrew/php/php-' + version + '/bin/php') }
     end
 end
