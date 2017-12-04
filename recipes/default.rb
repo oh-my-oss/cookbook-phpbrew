@@ -27,12 +27,20 @@ execute 'setup bashrc3' do
 end
 
 execute 'phpbrew init' do
-    command "phpbrew init && phpbrew known"
+    command "phpbrew init"
     environment(
         "PATH" => "/usr/local/bin:#{ENV['PATH']}",
         "PHPBREW_ROOT" => "/usr/local/lib64/phpbrew"
     )
-    not_if { File.exists?('/usr/local/lib64/phpbrew/bashrc') }
+    not_if { File.exists?('/usr/local/lib64/phpbrew/php-releases.json') }
+end
+
+execute 'phpbrew known --update --old' do
+    command "phpbrew known --update --old"
+    environment(
+        "PATH" => "/usr/local/bin:#{ENV['PATH']}",
+        "PHPBREW_ROOT" => "/usr/local/lib64/phpbrew"
+    )
 end
 
 node['php_versions'].each do |version|
