@@ -1,0 +1,35 @@
+<Directory /var/www/sites/php-<%= @version %>/*/public>
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Require all granted
+</Directory>
+
+<VirtualHost _default_:80>
+    ServerName <%= @version %>.<%= node['server_name'] %>
+    ServerAlias *.<%= @version %>.<%= node['server_name'] %>
+    VirtualDocumentRoot /var/www/sites/php-<%= @version %>/%1/public
+    CustomLog   logs/vhost_access_log combined
+    ErrorLog    logs/vhost_error_log
+    <FilesMatch \.php$>
+        SetHandler "proxy:unix:/usr/local/lib64/phpbrew/php/php-<%= @version %>/var/run/php-fpm.sock|fcgi://localhost"
+    </FilesMatch>
+</VirtualHost>
+
+<VirtualHost _default_:443>
+    ServerName <%= @version %>.<%= node['server_name'] %>
+    ServerAlias *.<%= @version %>.<%= node['server_name'] %>
+    VirtualDocumentRoot /var/www/sites/php-<%= @version %>/%1/public
+    CustomLog   logs/vhost_ssl_access_log combined
+    ErrorLog    logs/vhost_ssl_error_log
+
+    LogLevel warn
+    SSLEngine on
+    SSLProtocol all -SSLv2
+    SSLCipherSuite ALL:!ADH:!EXPORT:!SSLv2:RC4+RSA:+HIGH:+MEDIUM:+LOW
+    SSLCertificateFile /etc/pki/tls/certs/localhost.crt
+    SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
+
+    <FilesMatch \.php$>
+        SetHandler "proxy:unix:/usr/local/lib64/phpbrew/php/php-<%= @version %>/var/run/php-fpm.sock|fcgi://localhost"
+    </FilesMatch>
+</VirtualHost>

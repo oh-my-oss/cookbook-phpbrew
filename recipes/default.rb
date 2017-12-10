@@ -53,6 +53,16 @@ node['php_versions'].each do |version|
         not_if { File.exists?('/usr/local/lib64/phpbrew/php/php-' + version + '/bin/php') }
     end
 
+    execute 'service php-fpm set config user - ' + version  do
+      command 'echo "user = apache" >> /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
+        not_if 'grep "user = apache" /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
+    end
+
+    execute 'service php-fpm set config group - ' + version  do
+      command 'echo "group = apache" >> /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
+        not_if 'grep "group = apache" /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
+    end
+
     template '/etc/init.d/php-fpm-' + version do
         owner 'root'
         mode 0755
@@ -71,4 +81,31 @@ node['php_versions'].each do |version|
         command 'service php-fpm-' + version + ' start'
         not_if { File.exists?('/usr/local/lib64/phpbrew/php/php-' + version + '/var/run/php-fpm.pid') }
     end
+
+    directory "/var/www/sites/php-" + version do
+        owner "deploy"
+        group "deploy"
+        mode 0755
+        recursive true
+        action :create
+        only_if { Dir.exists?('/etc/httpd') }
+    end
+
+    template '/etc/httpd/conf.d/vhost-php-fpm-' + version + '.conf' do
+        owner 'root'
+        mode 0755
+        source 'vhost-php-fpm.conf.erb'
+        variables({
+            :version => version
+        })
+        notifies :restart, "service[httpd]"
+        only_if { Dir.exists?('/etc/httpd') }
+    end
+
+    ## テスト用の仮環境 phpinfo()
+    execute 'ln -s /vagrant/src/test /var/www/sites/php-' + version + '/'  do
+        command 'ln -s /vagrant/src/test /var/www/sites/php-' + version + '/'
+        not_if { Dir.exists?('/var/www/sites/php-' + version + '/test') }
+    end
+    ## テスト用の仮環境 ここまで
 end
