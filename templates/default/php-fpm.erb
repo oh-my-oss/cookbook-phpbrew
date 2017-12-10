@@ -1,0 +1,96 @@
+#!/bin/bash
+#
+# chkconfig: 2345 85 15
+# description: php-fpm vesrion <%= @php_version %>.
+
+_PHP_VERSION=<%= @php_version %>
+
+PHPBREW_ROOT=/usr/local/lib64/phpbrew
+mkdir -p ${PHPBREW_ROOT}/php/${_PHP_VERSION}/var/run
+PHPFPM_BIN=${PHPBREW_ROOT}/php/${_PHP_VERSION}/sbin/php-fpm
+PHPFPM_PIDFILE=${PHPBREW_ROOT}/php/${_PHP_VERSION}/var/run/php-fpm.pid
+
+function fpm_start()
+{
+  echo "Starting php-fpm..."
+  local regex="^php-5\.2.*"
+
+  if [[ ${_PHP_VERSION} =~ ${regex} ]]; then
+    ${PHPFPM_BIN} start
+  else
+    ${PHPFPM_BIN} --php-ini ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php.ini \
+      --fpm-config ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php-fpm.conf \
+      --pid ${PHPFPM_PIDFILE} \
+      "$@"
+  fi
+
+  if [[ $? != "0" ]] ; then
+    echo "php-fpm start failed."
+  fi
+}
+function fpm_stop()
+{
+  local regex="^php-5\.2.*"
+
+  if [[ ${PHPBREW_PHP} =~ ${regex} ]]; then
+    ${PHPFPM_BIN} stop
+  elif [[ -e ${PHPFPM_PIDFILE} ]] ; then
+    echo "Stopping php-fpm..."
+    kill $(cat ${PHPFPM_PIDFILE})
+    rm -f ${PHPFPM_PIDFILE}
+  fi
+}
+
+case $1 in
+  start)
+    fpm_start "${@:4}"
+    ;;
+  stop)
+    fpm_stop
+    ;;
+  setup)
+    command $PHPBREW_OVERRIDE_PHP $BIN $short_option "$@"
+    exit_status=$?
+    ;;
+  restart)
+    fpm_stop
+    fpm_start "${@:4}"
+    ;;
+  current)
+    if [[ -f $PHPFPM_PIDFILE ]] ; then
+      ps ux -p "$(cat $PHPFPM_PIDFILE)"
+    fi
+    ;;
+  module)
+    $PHPFPM_BIN --php-ini ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php.ini \
+      --fpm-config ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php-fpm.conf \
+      -m | less
+    ;;
+  info)
+    $PHPFPM_BIN --php-ini ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php.ini \
+      --fpm-config ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php-fpm.conf \
+      -i
+    ;;
+  config)
+    if [[ -n $EDITOR ]] ; then
+      $EDITOR ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php-fpm.conf
+    else
+      echo "Please set EDITOR environment variable for your favor."
+      nano ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php-fpm.conf
+    fi
+    ;;
+  which)
+    echo $PHPFPM_BIN
+    ;;
+  help)
+    $PHPFPM_BIN --php-ini ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php.ini \
+      --fpm-config ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php-fpm.conf --help
+    ;;
+  test)
+    $PHPFPM_BIN --php-ini ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php.ini \
+      --fpm-config ${PHPBREW_ROOT}/php/${_PHP_VERSION}/etc/php-fpm.conf --test
+    ;;
+  *)
+    echo "Usage: phpbrew fpm [start|stop|restart|module|test|config|setup|info|current|which|help]"
+    ;;
+esac
