@@ -4,6 +4,7 @@
 #
 # Copyright:: 2017, The Authors, All Rights Reserved.
 
+include_recipe 'base::default'
 include_recipe 'phpbrew::base'
 
 execute 'install phpbrew' do
