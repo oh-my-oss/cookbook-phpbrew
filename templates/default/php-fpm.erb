@@ -23,6 +23,7 @@ function fpm_start()
       --pid ${PHPFPM_PIDFILE} \
       "$@"
   fi
+  chown apache:apache ${PHPBREW_ROOT}/php/${_PHP_VERSION}/var/run/php-fpm.sock
 
   if [[ $? != "0" ]] ; then
     echo "php-fpm start failed."
