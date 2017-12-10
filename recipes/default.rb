@@ -52,4 +52,23 @@ node['php_versions'].each do |version|
         )
         not_if { File.exists?('/usr/local/lib64/phpbrew/php/php-' + version + '/bin/php') }
     end
+
+    template '/etc/init.d/php-fpm-' + version do
+        owner 'root'
+        mode 0755
+        source 'php-fpm.erb'
+        variables({
+            :php_version => 'php-' + version
+        })
+    end
+
+    execute 'php-fpm chkconfig - ' + version  do
+        command 'chkconfig --add php-fpm-' + version
+        not_if 'chkconfig --list php-fpm-' + version
+    end
+
+    execute 'service php-fpm start - ' + version  do
+        command 'service php-fpm-' + version + ' start'
+        not_if { File.exists?('/usr/local/lib64/phpbrew/php/php-' + version + '/var/run/php-fpm.pid') }
+    end
 end
