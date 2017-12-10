@@ -45,7 +45,7 @@ end
 
 node['php_versions'].each do |version|
     execute 'php' + version + ' install' do
-        command 'phpbrew install ' + version + ' ' + node['phpbrew_install_arg'] + ' -- --with-libdir=lib64'
+        command 'phpbrew install ' + version + ' ' + node['phpbrew_install_arg'] + ' +fpm -- --with-libdir=lib64'
         environment(
             "PATH" => "/usr/local/bin:#{ENV['PATH']}",
             "PHPBREW_ROOT" => "/usr/local/lib64/phpbrew"
