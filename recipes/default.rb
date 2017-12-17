@@ -43,6 +43,36 @@ execute 'phpbrew known --update --old' do
     )
 end
 
+bash 'update .phpbrew/bashrc setting' do
+    code <<-EOH
+        for i in `cat /etc/passwd|cut -d: -f6,7|grep '/bin/bash$'|cut -d: -f1|grep -v /root`;
+        do
+            if [ $(grep '[ -f ~/.phpbrew/bashrc ] && . ~/.phpbrew/bashrc' $i/.bashrc|wc -l ) -eq 0 ]; then
+                if [ -f /home/mysql/.bashrc ]; then
+                    echo "update $i/.bashrc"
+                    echo '[ -f ~/.phpbrew/bashrc ] && . ~/.phpbrew/bashrc' >> $i/.bashrc
+                fi
+            fi
+        done
+    EOH
+end
+
+bash 'copy .phpbrew dir' do
+    code <<-EOH
+        for i in `cat /etc/passwd|cut -d: -f6,7|grep '/bin/bash$'|cut -d: -f1|grep -v /root`;
+        do
+            if [ -d $i ]; then
+                if [ ! -d $i/.phpbrew ]; then
+                    if [ -d /root/.phpbrew ]; then
+                        echo "create $i/.phpbrew"
+                        cp -rf /root/.phpbrew $i/ && chown -R $(basename $i):$(basename $i) $i/.phpbrew;
+                    fi
+                fi
+            fi
+        done
+    EOH
+end
+
 node['php_versions'].each do |version|
     execute 'php' + version + ' install' do
         command 'phpbrew install ' + version + ' ' + node['phpbrew_install_arg'] + ' +fpm -- --with-libdir=lib64'
