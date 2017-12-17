@@ -85,12 +85,12 @@ node['php_versions'].each do |version|
     end
 
     execute 'service php-fpm set config user - ' + version  do
-      command 'echo "user = apache" >> /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
+        command 'echo "user = apache" >> /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
         not_if 'grep "user = apache" /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
     end
 
     execute 'service php-fpm set config group - ' + version  do
-      command 'echo "group = apache" >> /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
+        command 'echo "group = apache" >> /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
         not_if 'grep "group = apache" /usr/local/lib64/phpbrew/php/php-' + version + '/etc/php-fpm.conf'
     end
 
