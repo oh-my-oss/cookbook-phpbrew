@@ -13,8 +13,8 @@ execute 'install phpbrew' do
 end
 
 execute 'setup bashrc' do
-    command "echo 'export PATH=$PATH:/usr/local/bin' >> /etc/bashrc"
-    not_if "grep 'export PATH=$PATH:/usr/local/bin' /etc/bashrc"
+    command "echo 'export PATH=$PATH:/usr/local/bin:/usr/local/lib64/phpbrew/bin' >> /etc/bashrc"
+    not_if "grep 'export PATH=$PATH:/usr/local/bin:/usr/local/lib64/phpbrew/bin' /etc/bashrc"
 end
 
 execute 'setup bashrc2' do
@@ -36,12 +36,26 @@ execute 'phpbrew init' do
     not_if { File.exists?('/usr/local/lib64/phpbrew/php-releases.json') }
 end
 
+directory "/usr/local/lib64/phpbrew/bin" do
+    recursive true
+    action :create
+end
+
 execute 'phpbrew known --update --old' do
     command "phpbrew known --update --old"
     environment(
         "PATH" => "/usr/local/bin:#{ENV['PATH']}",
         "PHPBREW_ROOT" => "/usr/local/lib64/phpbrew"
     )
+end
+
+execute 'setup composer' do
+    command "phpbrew app get composer"
+    environment(
+        "PATH" => "/usr/local/bin:#{ENV['PATH']}",
+        "PHPBREW_ROOT" => "/usr/local/lib64/phpbrew"
+    )
+    not_if { File.exists?('/usr/local/lib64/phpbrew/bin/composer') }
 end
 
 bash 'update .phpbrew/bashrc setting' do
