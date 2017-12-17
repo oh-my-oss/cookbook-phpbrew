@@ -47,6 +47,7 @@ execute 'phpbrew known --update --old' do
         "PATH" => "/usr/local/bin:#{ENV['PATH']}",
         "PHPBREW_ROOT" => "/usr/local/lib64/phpbrew"
     )
+    not_if 'find /usr/local/lib64/phpbrew/php-releases.json -ctime -9' # 最後に更新したのが10日以上前
 end
 
 execute 'setup composer' do
