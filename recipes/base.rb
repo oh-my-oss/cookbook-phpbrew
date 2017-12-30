@@ -1,4 +1,8 @@
-%w(libxml2-devel openssl-devel bzip2-devel libcurl-devel readline-devel libxslt-devel libmcrypt-devel).each do |pkg|
+# for GD libjpeg-turbo-devel, libpng-devel
+# for gmp gmp-devel
+# for intl libicu-devel
+# for g++ gcc-c++
+%w(libxml2-devel openssl-devel bzip2-devel libcurl-devel readline-devel libxslt-devel libmcrypt-devel libpng-devel libjpeg-turbo-devel gmp-devel libicu-devel gcc-c++).each do |pkg|
     package pkg
 end
 
